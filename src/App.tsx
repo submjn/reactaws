@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import "@aws-amplify/ui-react/styles.css";
-import { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation, Storage } from "aws-amplify";
 import {
-  withAuthenticator,
   Button,
   Flex,
+  Heading,
+  Image,
   Text,
   TextField,
-  Heading,
   View,
+  withAuthenticator,
 } from "@aws-amplify/ui-react";
 import { listTodos } from './graphql/queries';
 import {
@@ -28,17 +29,28 @@ function App({ signOut }: any) {
     const todoData: any = await API.graphql(graphqlOperation(listTodos));
     
     const todosFromAPI = todoData.data.listTodos.items;
-    console.log(todosFromAPI)
+    await Promise.all(
+      todoData.map(async (note: any) => {
+        if(note.image) {
+          const url = await Storage.get(note.name);
+          note.image = url;
+        }
+        return note;
+      })
+    )
     setTodos(todosFromAPI);
   }
 
   async function createTodo(event: any) {
     event.preventDefault();
     const form = new FormData(event.target);
+    const image: any = form.get("image");
     const data = {
       name: form.get("name"),
       description: form.get("description"),
+      image: image.name
     };
+    if(!!data.image) await Storage.put(data.name, image);
     await API.graphql({
       query: createTodoMutation,
       variables: {input: data},
@@ -47,9 +59,10 @@ function App({ signOut }: any) {
     event.target.reset();
   }
 
-  async function deleteTodo({id}: any) {
+  async function deleteTodo({id, name}: any) {
     const newNotes = todos.filter((note: any) => note.id !== id);
     setTodos(newNotes);
+    await Storage.remove(name);
     await API.graphql({
       query: deleteTodoMutation,
       variables: { input: { id } },
@@ -77,6 +90,12 @@ function App({ signOut }: any) {
             variation="quiet"
             required
           />
+          <View
+            name="image"
+            as="input"
+            type="file"
+            style={{ alignSelf: "end" }}
+          />
           <Button type="submit" variation="primary">
             Create Note
           </Button>
@@ -95,6 +114,13 @@ function App({ signOut }: any) {
               {note.name}
             </Text>
             <Text as="span">{note.description}</Text>
+            {note.image && (
+              <Image
+                src={note.image}
+                alt={`visual aid for ${notes.name}`}
+                style={{ width: 400 }}
+              />
+            )}
             <Button variation="link" onClick={() => deleteTodo(note)}>
               Delete note
             </Button>
