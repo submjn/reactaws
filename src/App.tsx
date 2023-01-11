@@ -4,10 +4,10 @@ import "@aws-amplify/ui-react/styles.css";
 import { API, Storage } from "aws-amplify";
 import {
   Button,
-  FileUploader,
   Flex,
   Heading,
   Image,
+  SelectField,
   Table,
   TableBody,
   TableCell,
@@ -29,6 +29,16 @@ import {
 function App({ signOut }: any) {
   const [members, setMembers] = useState([]);
 
+  const ageRange: any = [];
+  const fmembers: any = [];
+  
+  for (let i = 1; i < 101; i++) {
+    ageRange.push(<option key={i} value={i}>{i}</option>);
+  }
+  for (let i = 1; i < 13; i++) {
+    fmembers.push(<option key={i} value={i}>{i}</option>);
+  }
+
   useEffect(() => {
     fetchMembers();
   }, [])
@@ -38,15 +48,20 @@ function App({ signOut }: any) {
     
     const dataFromAPI = apiData.data.listMembers.items;
     await Promise.all(
-      dataFromAPI.map(async (member: any) => {
-        if(member.image) {
-          const url = await Storage.get(member.name);
-          member.image = url;
+      dataFromAPI.map(async (data: any) => {
+        if(data.image) {
+          const url = await Storage.get(imageStorageName(data));
+          data.image = url;
         }
-        return member;
+        return data;
       })
     )
     setMembers(dataFromAPI);
+  }
+
+  function imageStorageName(data: any) {
+    const name = data.firstName + data.lastName + data.gender + data.age
+    return name.toString().toLowerCase();
   }
 
   async function createMember(event: any) {
@@ -61,7 +76,9 @@ function App({ signOut }: any) {
       family: form.get("fmembers"),
       image: image.name
     } as any;
-    if(!!data.image) await Storage.put(data.name, image);
+    
+    if(!!data.image) await Storage.put(imageStorageName(data) , image);
+    
     await API.graphql({
       query: createTodoMutation,
       variables: {input: data},
@@ -97,7 +114,7 @@ function App({ signOut }: any) {
   
           header: {
             color: { value: '{colors.blue.80}' },
-            fontSize: { value: '{fontSizes.xl}' },
+            fontSize: { value: '{fontSizes.l}' },
           },
   
           data: {
@@ -112,52 +129,51 @@ function App({ signOut }: any) {
     <View className="App">
       <Heading level={1}>Hudeo House</Heading>
       <View as="form" margin="3rem" onSubmit={createMember}>
-        <View margin="3rem 0">
+        <View margin="1rem 0">
           <Flex direction="row" justifyContent="left">
             <TextField 
               name="fname"
               placeholder="First Name"
               label="First Name"
+              labelHidden
               required
             />
             <TextField 
               name="lname"
               placeholder="Last Name"
               label="Last Name"
+              labelHidden
               required
             />
           </Flex>
         </View>
-        <View margin="3rem 0">
+        <View margin="1rem 0">
         <Flex direction="row" justifyContent="left">
-          <TextField 
-            name="age"
-            placeholder="First Name"
-            label="Age"
-            required
-          />
-          <TextField 
-            name="gender"
-            placeholder="Last Name"
-            label="Gender"
-          />
-          <TextField 
-            name="fmembers"
-            placeholder="Family Members"
-            label="Family Members"
-          />
+          <SelectField defaultValue='1' name="age" label="Age">
+            {ageRange}
+          </SelectField>
+          <SelectField name="gender" label="Gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </SelectField>
+          <SelectField defaultValue='1' name="fmembers" label="Total Members">
+            {fmembers}
+          </SelectField>
         </Flex>
         </View>
-        <View margin="3rem 0">
+        <View margin="1rem 0">
         <Flex direction="column" justifyContent="center">
           <TextAreaField
             label="Member Description"
             placeholder="Write something about you!"
+            labelHidden
+            required
           />
           <View
             name="image"
             as="input"
             type="file"/>
+
           <Button type="submit" variation="primary">
             Create Member
           </Button>
@@ -167,7 +183,7 @@ function App({ signOut }: any) {
       <Heading level={2}>All Members</Heading>
       <View margin="3rem 0">
         <ThemeProvider theme={theme} colorMode="light">
-          <Table highlightOnHover variation="striped">
+          <Table highlightOnHover variation="striped" className="member-table">
             <TableHead>
               <TableRow>
                 <TableCell as="th">Name</TableCell>
@@ -181,7 +197,7 @@ function App({ signOut }: any) {
             </TableHead>
             <TableBody>
               {members.map((member: any) => (
-                <TableRow key={member.id || member.firstName}>
+                <TableRow key={member.id || (member.firstName.toLowerCase() + member.lastName.toLowerCase())}>
                   <TableCell>
                     {member.firstName + " " + member.lastName}
                   </TableCell>
