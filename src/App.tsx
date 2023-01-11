@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import "@aws-amplify/ui-react/styles.css";
-import { API } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import {
   withAuthenticator,
   Button,
@@ -25,9 +25,10 @@ function App({ signOut }: any) {
   }, [])
 
   async function fetchTodos() {
-    const apiData = await API.graphql({query: listTodos});
-    const todosFromAPI: never[] = apiData.data.listTodos.items;
-    console.log(apiData)
+    const todoData: any = await API.graphql(graphqlOperation(listTodos));
+    
+    const todosFromAPI = todoData.data.listTodos.items;
+    console.log(todosFromAPI)
     setTodos(todosFromAPI);
   }
 
@@ -106,3 +107,4 @@ function App({ signOut }: any) {
 }
 
 export default withAuthenticator(App);
+
