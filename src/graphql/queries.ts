@@ -2,11 +2,15 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getTodo = /* GraphQL */ `
-  query GetTodo($id: ID!) {
-    getTodo(id: $id) {
+export const getMember = /* GraphQL */ `
+  query GetMember($id: ID!) {
+    getMember(id: $id) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
@@ -14,16 +18,20 @@ export const getTodo = /* GraphQL */ `
     }
   }
 `;
-export const listTodos = /* GraphQL */ `
-  query ListTodos(
-    $filter: ModelTodoFilterInput
+export const listMembers = /* GraphQL */ `
+  query ListMembers(
+    $filter: ModelMemberFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listTodos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listMembers(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        name
+        firstName
+        lastName
+        age
+        gender
+        family
         description
         image
         createdAt

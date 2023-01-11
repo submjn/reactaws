@@ -4,50 +4,61 @@ import "@aws-amplify/ui-react/styles.css";
 import { API, Storage } from "aws-amplify";
 import {
   Button,
+  FileUploader,
   Flex,
   Heading,
   Image,
-  Text,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextAreaField,
   TextField,
+  Theme,
+  ThemeProvider,
   View,
   withAuthenticator,
 } from "@aws-amplify/ui-react";
-import { listTodos } from './graphql/queries';
+import { listMembers } from './graphql/queries';
 import {
-  createTodo as createTodoMutation,
-  deleteTodo as deleteTodoMutation,
+  createMember as createTodoMutation,
+  deleteMember as deleteTodoMutation,
 } from "./graphql/mutations";
 
 function App({ signOut }: any) {
-  const [todos, setTodos] = useState([]);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    fetchTodos();
+    fetchMembers();
   }, [])
 
-  async function fetchTodos() {
-    const todoData: any = await API.graphql({query: listTodos});
+  async function fetchMembers() {
+    const apiData: any = await API.graphql({query: listMembers});
     
-    const todosFromAPI = todoData.data.listTodos.items;
+    const dataFromAPI = apiData.data.listMembers.items;
     await Promise.all(
-      todosFromAPI.map(async (note: any) => {
-        if(note.image) {
-          const url = await Storage.get(note.name);
-          note.image = url;
+      dataFromAPI.map(async (member: any) => {
+        if(member.image) {
+          const url = await Storage.get(member.name);
+          member.image = url;
         }
-        return note;
+        return member;
       })
     )
-    setTodos(todosFromAPI);
+    setMembers(dataFromAPI);
   }
 
-  async function createTodo(event: any) {
+  async function createMember(event: any) {
     event.preventDefault();
     const form = new FormData(event.target);
     const image: any = form.get("image");
     const data = {
-      name: form.get("name"),
-      description: form.get("description"),
+      firstName: form.get("fname"),
+      lastName: form.get("lname"),
+      age: form.get("age"),
+      gender: form.get("gender"),
+      family: form.get("fmembers"),
       image: image.name
     } as any;
     if(!!data.image) await Storage.put(data.name, image);
@@ -55,13 +66,13 @@ function App({ signOut }: any) {
       query: createTodoMutation,
       variables: {input: data},
     });
-    fetchTodos();
+    fetchMembers();
     event.target.reset();
   }
 
-  async function deleteTodo({id, name}: any) {
-    const newNotes = todos.filter((note: any) => note.id !== id);
-    setTodos(newNotes);
+  async function deleteMember({id, name}: any) {
+    const newNotes = members.filter((member: any) => member.id !== id);
+    setMembers(newNotes);
     await Storage.remove(name);
     await API.graphql({
       query: deleteTodoMutation,
@@ -69,63 +80,140 @@ function App({ signOut }: any) {
     });
   }
 
+  const theme: Theme = {
+    name: 'table-theme',
+    tokens: {
+      components: {
+        table: {
+          row: {
+            hover: {
+              backgroundColor: { value: '{colors.blue.20}' },
+            },
+  
+            striped: {
+              backgroundColor: { value: '{colors.blue.10}' },
+            },
+          },
+  
+          header: {
+            color: { value: '{colors.blue.80}' },
+            fontSize: { value: '{fontSizes.xl}' },
+          },
+  
+          data: {
+            fontWeight: { value: '{fontWeights.semibold}' },
+          },
+        },
+      },
+    },
+  };
+
   return (
     <View className="App">
-      <Heading level={1}>My Notes App</Heading>
-      <View as="form" margin="3rem 0" onSubmit={createTodo}>
-        <Flex direction="row" justifyContent="center">
+      <Heading level={1}>Hudeo House</Heading>
+      <View as="form" margin="3rem" onSubmit={createMember}>
+        <View margin="3rem 0">
+          <Flex direction="row" justifyContent="left">
+            <TextField 
+              name="fname"
+              placeholder="First Name"
+              label="First Name"
+              required
+            />
+            <TextField 
+              name="lname"
+              placeholder="Last Name"
+              label="Last Name"
+              required
+            />
+          </Flex>
+        </View>
+        <View margin="3rem 0">
+        <Flex direction="row" justifyContent="left">
           <TextField 
-            name="name"
-            placeholder="Note Name"
-            label="Note Name"
-            labelHidden
-            variation="quiet"
+            name="age"
+            placeholder="First Name"
+            label="Age"
             required
           />
-          <TextField
-            name="description"
-            placeholder="Note Description"
-            label="Note Description"
-            labelHidden
-            variation="quiet"
-            required
+          <TextField 
+            name="gender"
+            placeholder="Last Name"
+            label="Gender"
+          />
+          <TextField 
+            name="fmembers"
+            placeholder="Family Members"
+            label="Family Members"
+          />
+        </Flex>
+        </View>
+        <View margin="3rem 0">
+        <Flex direction="column" justifyContent="center">
+          <TextAreaField
+            label="Member Description"
+            placeholder="Write something about you!"
           />
           <View
             name="image"
             as="input"
-            type="file"
-            style={{ alignSelf: "end" }}
-          />
+            type="file"/>
           <Button type="submit" variation="primary">
-            Create Note
+            Create Member
           </Button>
         </Flex>
+        </View>
       </View> 
-      <Heading level={2}>Current Notes</Heading>
+      <Heading level={2}>All Members</Heading>
       <View margin="3rem 0">
-        {todos.map((note: any) => (
-          <Flex
-            key={note.id || note.name}
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Text as="strong" fontWeight={700}>
-              {note.name}
-            </Text>
-            <Text as="span">{note.description}</Text>
-            {note.image && (
-              <Image
-                src={note.image}
-                alt={`visual aid for ${note.name}`}
-                style={{ width: 400 }}
-              />
-            )}
-            <Button variation="link" onClick={() => deleteTodo(note)}>
-              Delete note
-            </Button>
-          </Flex>
-        ))}
+        <ThemeProvider theme={theme} colorMode="light">
+          <Table highlightOnHover variation="striped">
+            <TableHead>
+              <TableRow>
+                <TableCell as="th">Name</TableCell>
+                <TableCell as="th">Age</TableCell>
+                <TableCell as="th">Gender</TableCell>
+                <TableCell as="th">Family</TableCell>
+                <TableCell as="th">About</TableCell>
+                <TableCell as="th">Picture</TableCell>
+                <TableCell as="th">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {members.map((member: any) => (
+                <TableRow key={member.id || member.firstName}>
+                  <TableCell>
+                    {member.firstName + " " + member.lastName}
+                  </TableCell>
+                  <TableCell>
+                    {member.age}
+                  </TableCell>
+                  <TableCell>
+                    {member.gender}
+                  </TableCell>
+                  <TableCell>
+                    {member.family}
+                  </TableCell>
+                  <TableCell>{member.description}</TableCell>
+                  <TableCell>
+                    {member.image && (
+                      <Image
+                        src={member.image}
+                        alt={`visual aid for ${member.name}`}
+                        style={{ width: 400 }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button variation="link" onClick={() => deleteMember(member)}>
+                      Delete member
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ThemeProvider>
       </View>
       <Button onClick={signOut}>Sign Out</Button>
     </View>

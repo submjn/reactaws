@@ -2,14 +2,18 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createTodo = /* GraphQL */ `
-  mutation CreateTodo(
-    $input: CreateTodoInput!
-    $condition: ModelTodoConditionInput
+export const createMember = /* GraphQL */ `
+  mutation CreateMember(
+    $input: CreateMemberInput!
+    $condition: ModelMemberConditionInput
   ) {
-    createTodo(input: $input, condition: $condition) {
+    createMember(input: $input, condition: $condition) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
@@ -17,14 +21,18 @@ export const createTodo = /* GraphQL */ `
     }
   }
 `;
-export const updateTodo = /* GraphQL */ `
-  mutation UpdateTodo(
-    $input: UpdateTodoInput!
-    $condition: ModelTodoConditionInput
+export const updateMember = /* GraphQL */ `
+  mutation UpdateMember(
+    $input: UpdateMemberInput!
+    $condition: ModelMemberConditionInput
   ) {
-    updateTodo(input: $input, condition: $condition) {
+    updateMember(input: $input, condition: $condition) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
@@ -32,14 +40,18 @@ export const updateTodo = /* GraphQL */ `
     }
   }
 `;
-export const deleteTodo = /* GraphQL */ `
-  mutation DeleteTodo(
-    $input: DeleteTodoInput!
-    $condition: ModelTodoConditionInput
+export const deleteMember = /* GraphQL */ `
+  mutation DeleteMember(
+    $input: DeleteMemberInput!
+    $condition: ModelMemberConditionInput
   ) {
-    deleteTodo(input: $input, condition: $condition) {
+    deleteMember(input: $input, condition: $condition) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt

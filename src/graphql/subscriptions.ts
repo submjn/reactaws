@@ -2,11 +2,15 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateTodo = /* GraphQL */ `
-  subscription OnCreateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onCreateTodo(filter: $filter) {
+export const onCreateMember = /* GraphQL */ `
+  subscription OnCreateMember($filter: ModelSubscriptionMemberFilterInput) {
+    onCreateMember(filter: $filter) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
@@ -14,11 +18,15 @@ export const onCreateTodo = /* GraphQL */ `
     }
   }
 `;
-export const onUpdateTodo = /* GraphQL */ `
-  subscription OnUpdateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onUpdateTodo(filter: $filter) {
+export const onUpdateMember = /* GraphQL */ `
+  subscription OnUpdateMember($filter: ModelSubscriptionMemberFilterInput) {
+    onUpdateMember(filter: $filter) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
@@ -26,11 +34,15 @@ export const onUpdateTodo = /* GraphQL */ `
     }
   }
 `;
-export const onDeleteTodo = /* GraphQL */ `
-  subscription OnDeleteTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onDeleteTodo(filter: $filter) {
+export const onDeleteMember = /* GraphQL */ `
+  subscription OnDeleteMember($filter: ModelSubscriptionMemberFilterInput) {
+    onDeleteMember(filter: $filter) {
       id
-      name
+      firstName
+      lastName
+      age
+      gender
+      family
       description
       image
       createdAt
