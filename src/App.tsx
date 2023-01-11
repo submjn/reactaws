@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import "@aws-amplify/ui-react/styles.css";
-import { API, graphqlOperation, Storage } from "aws-amplify";
+import { API, Storage } from "aws-amplify";
 import {
   Button,
   Flex,
@@ -26,11 +26,11 @@ function App({ signOut }: any) {
   }, [])
 
   async function fetchTodos() {
-    const todoData: any = await API.graphql(graphqlOperation(listTodos));
+    const todoData: any = await API.graphql({query: listTodos});
     
     const todosFromAPI = todoData.data.listTodos.items;
     await Promise.all(
-      todoData.map(async (note: any) => {
+      todosFromAPI.map(async (note: any) => {
         if(note.image) {
           const url = await Storage.get(note.name);
           note.image = url;
@@ -49,7 +49,7 @@ function App({ signOut }: any) {
       name: form.get("name"),
       description: form.get("description"),
       image: image.name
-    };
+    } as any;
     if(!!data.image) await Storage.put(data.name, image);
     await API.graphql({
       query: createTodoMutation,
@@ -117,7 +117,7 @@ function App({ signOut }: any) {
             {note.image && (
               <Image
                 src={note.image}
-                alt={`visual aid for ${notes.name}`}
+                alt={`visual aid for ${note.name}`}
                 style={{ width: 400 }}
               />
             )}
